@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:myapp/models/app_entity.dart';
+import 'package:myapp/presentation/app_detail_view.dart';
 import 'package:myapp/presentation/providers.dart';
+
+import 'home_page.dart';
 
 class AppListView extends ConsumerWidget {
   final List<AppEntity> apps;
@@ -54,6 +57,14 @@ class AppListView extends ConsumerWidget {
               );
             },
           ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AppDetailView(app: app),
+              ),
+            );
+          },
         );
       },
     );
