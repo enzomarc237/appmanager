@@ -11,6 +11,7 @@ final appListProvider = StateProvider<List<AppEntity>>((ref) => []);
 final isLoadingProvider = StateProvider<bool>((ref) => false);
 final sortCriteriaProvider = StateProvider<SortCriteria>(
     (ref) => SortCriteria(field: SortField.name, direction: SortDirection.ascending));
+final filterProvider = StateProvider<String>((ref) => '');
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -20,8 +21,10 @@ class HomePage extends ConsumerWidget {
     final appList = ref.watch(appListProvider);
     final isLoading = ref.watch(isLoadingProvider);
     final sortCriteria = ref.watch(sortCriteriaProvider);
+    final filter = ref.watch(filterProvider);
 
-    final sortedAppList = _sortApps(appList, sortCriteria);
+    final filteredAppList = _filterApps(appList, filter);
+    final sortedAppList = _sortApps(filteredAppList, sortCriteria);
 
     return Scaffold(
       appBar: AppBar(
@@ -31,6 +34,15 @@ class HomePage extends ConsumerWidget {
         ),
         actions: [
           _buildSortMenu(ref),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: AppSearchDelegate(ref),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.delete_forever_outlined),
             tooltip: 'Clear Cache & Rescan',
@@ -106,6 +118,15 @@ class HomePage extends ConsumerWidget {
     );
   }
 
+  List<AppEntity> _filterApps(List<AppEntity> apps, String filter) {
+    if (filter.isEmpty) {
+      return apps;
+    }
+    return apps
+        .where((app) => app.name.toLowerCase().contains(filter.toLowerCase()))
+        .toList();
+  }
+
   List<AppEntity> _sortApps(List<AppEntity> apps, SortCriteria criteria) {
     apps.sort((a, b) {
       int comparison;
@@ -176,5 +197,45 @@ class HomePage extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class AppSearchDelegate extends SearchDelegate {
+  final WidgetRef ref;
+
+  AppSearchDelegate(this.ref);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+          ref.read(filterProvider.notifier).state = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    ref.read(filterProvider.notifier).state = query;
+    return const SizedBox.shrink();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return const SizedBox.shrink();
   }
 }
