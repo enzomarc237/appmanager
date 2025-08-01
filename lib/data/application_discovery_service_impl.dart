@@ -1,10 +1,12 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:myapp/data/app_repository.dart';
 import 'package:myapp/domain/application_discovery_service.dart';
 import 'package:myapp/models/app_entity.dart';
 
 class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
   final AppRepository _appRepository = AppRepository();
+  static const platform = MethodChannel('com.appmanager/system');
 
   @override
   Future<List<AppEntity>> discoverApplications() async {
@@ -13,9 +15,7 @@ class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
       return apps;
     }
 
-    // For now, return a hardcoded list of applications for UI development.
-    // The actual implementation will use method channels to call native code.
-    apps = await _getMockApps();
+    apps = await _getAppsFromNative();
     for (var app in apps) {
       await _appRepository.insert(app);
     }
@@ -24,55 +24,33 @@ class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
 
   @override
   Future<void> scanDirectory(String path) async {
-    // In the future, this will trigger a scan in a specific directory.
-    // For now, it does nothing.
-    return Future.value();
+    await platform.invokeMethod('scanDirectory', {'path': path});
   }
 
   Future<void> clear() async {
     await _appRepository.clearAll();
   }
 
-  Future<List<AppEntity>> _getMockApps() {
-    return Future.delayed(const Duration(seconds: 2), () {
-      return [
-        AppEntity(
-          id: 'com.apple.dt.xcode',
-          name: 'Xcode',
-          bundleId: 'com.apple.dt.xcode',
-          path: '/Applications/Xcode.app',
-          createdAt: DateTime(2023, 1, 15),
-          modifiedAt: DateTime(2023, 10, 26),
-          lastLaunchedAt: DateTime(2023, 11, 1),
-          size: 12884901888,
-          iconData: Uint8List(0), // Placeholder for icon
-          isSystemApp: true,
-        ),
-        AppEntity(
-          id: 'com.google.chrome',
-          name: 'Google Chrome',
-          bundleId: 'com.google.chrome',
-          path: '/Applications/Google Chrome.app',
-          createdAt: DateTime(2022, 8, 20),
-          modifiedAt: DateTime(2023, 10, 30),
-          lastLaunchedAt: DateTime(2023, 11, 2),
-          size: 482344960,
-          iconData: Uint8List(0), // Placeholder for icon
-          isSystemApp: false,
-        ),
-        AppEntity(
-          id: 'com.figma.desktop',
-          name: 'Figma',
-          bundleId: 'com.figma.desktop',
-          path: '/Applications/Figma.app',
-          createdAt: DateTime(2023, 3, 10),
-          modifiedAt: DateTime(2023, 10, 15),
-          lastLaunchedAt: DateTime(2023, 10, 28),
-          size: 278528000,
-          iconData: Uint8List(0), // Placeholder for icon
-          isSystemApp: false,
-        ),
-      ];
-    });
+  Future<List<AppEntity>> _getAppsFromNative() async {
+    final List<dynamic> result = await platform.invokeMethod('getApplications');
+    return result.map((e) => _mapToApp(e)).toList();
+  }
+
+  AppEntity _mapToApp(Map<dynamic, dynamic> map) {
+    return AppEntity(
+      id: map['bundleId'] ?? '',
+      name: map['name'] ?? 'Unknown',
+      bundleId: map['bundleId'] ?? '',
+      path: map['path'] ?? '',
+      createdAt:
+          DateTime.fromMillisecondsSinceEpoch(map['createdAt'] ?? 0),
+      modifiedAt:
+          DateTime.fromMillisecondsSinceEpoch(map['modifiedAt'] ?? 0),
+      lastLaunchedAt:
+          DateTime.fromMillisecondsSinceEpoch(map['lastLaunchedAt'] ?? 0),
+      size: map['size'] ?? 0,
+      iconData: map['icon'] is Uint8List ? map['icon'] : Uint8List(0),
+      isSystemApp: map['isSystemApp'] ?? false,
+    );
   }
 }
