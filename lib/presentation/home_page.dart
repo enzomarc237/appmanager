@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:myapp/data/application_discovery_service_impl.dart';
+import 'package:myapp/data/linux_discovery_service.dart';
+import 'package:myapp/data/macos_discovery_service.dart';
 import 'package:myapp/domain/sort_criteria.dart';
 import 'package:myapp/models/app_entity.dart';
 import 'package:myapp/presentation/app_list_view.dart';
@@ -49,12 +52,14 @@ class HomePage extends ConsumerWidget {
             tooltip: 'Clear Cache & Rescan',
             onPressed: () async {
               ref.read(isLoadingProvider.notifier).state = true;
-              await (ref.read(applicationDiscoveryServiceProvider)
-                      as ApplicationDiscoveryServiceImpl)
-                  .clear();
-              final apps = await ref
-                  .read(applicationDiscoveryServiceProvider)
-                  .discoverApplications();
+              final discoveryService =
+                  ref.read(applicationDiscoveryServiceProvider);
+              if (Platform.isMacOS) {
+                await (discoveryService as MacOSDiscoveryService).clear();
+              } else if (Platform.isLinux) {
+                await (discoveryService as LinuxDiscoveryService).clear();
+              }
+              final apps = await discoveryService.discoverApplications();
               ref.read(appListProvider.notifier).state = apps;
               ref.read(isLoadingProvider.notifier).state = false;
             },

@@ -4,7 +4,7 @@ import 'package:myapp/data/app_repository.dart';
 import 'package:myapp/domain/application_discovery_service.dart';
 import 'package:myapp/models/app_entity.dart';
 
-class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
+class MacOSDiscoveryService implements ApplicationDiscoveryService {
   final AppRepository _appRepository = AppRepository();
   static const platform = MethodChannel('com.appmanager/system');
 
