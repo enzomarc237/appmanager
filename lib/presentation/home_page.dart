@@ -94,28 +94,36 @@ class HomePage extends ConsumerWidget {
             SortCriteria(field: field, direction: newDirection);
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<SortField>>[
-        const PopupMenuItem<SortField>(
-          value: SortField.name,
-          child: Text('Sort by Name'),
-        ),
-        const PopupMenuItem<SortField>(
-          value: SortField.size,
-          child: Text('Sort by Size'),
-        ),
-        const PopupMenuItem<SortField>(
-          value: SortField.createdAt,
-          child: Text('Sort by Creation Date'),
-        ),
-        const PopupMenuItem<SortField>(
-          value: SortField.modifiedAt,
-          child: Text('Sort by Modification Date'),
-        ),
-        const PopupMenuItem<SortField>(
-          value: SortField.lastLaunchedAt,
-          child: Text('Sort by Last Launched'),
-        ),
+        _buildSortMenuItem(SortField.name, 'Sort by Name', sortCriteria),
+        _buildSortMenuItem(SortField.size, 'Sort by Size', sortCriteria),
+        _buildSortMenuItem(
+            SortField.createdAt, 'Sort by Creation Date', sortCriteria),
+        _buildSortMenuItem(
+            SortField.modifiedAt, 'Sort by Modification Date', sortCriteria),
+        _buildSortMenuItem(
+            SortField.lastLaunchedAt, 'Sort by Last Launched', sortCriteria),
       ],
       icon: const Icon(Icons.sort),
+    );
+  }
+
+  PopupMenuItem<SortField> _buildSortMenuItem(
+      SortField field, String text, SortCriteria criteria) {
+    return PopupMenuItem<SortField>(
+      value: field,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(text),
+          if (criteria.field == field)
+            Icon(
+              criteria.direction == SortDirection.ascending
+                  ? Icons.arrow_upward
+                  : Icons.arrow_downward,
+              size: 16,
+            ),
+        ],
+      ),
     );
   }
 

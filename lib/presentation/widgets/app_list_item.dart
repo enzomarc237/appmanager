@@ -12,10 +12,14 @@ class AppListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final color = _getLaunchColor(app.lastLaunchedAt);
+
     return ListTile(
-      leading: app.iconData.isNotEmpty
-          ? Image.memory(app.iconData)
-          : const Icon(Icons.apps),
+      leading: Container(
+        width: 4,
+        height: 40,
+        color: color,
+      ),
       title: Text(app.name),
       subtitle: Text(
           '${(app.size / 1024 / 1024).toStringAsFixed(2)} MB - Last Launched: ${app.lastLaunchedAt.toLocal()}'),
@@ -61,5 +65,20 @@ class AppListItem extends ConsumerWidget {
         );
       },
     );
+  }
+
+  Color _getLaunchColor(DateTime lastLaunchedAt) {
+    final now = DateTime.now();
+    final difference = now.difference(lastLaunchedAt);
+
+    if (difference.inDays > 365) {
+      return Colors.red;
+    } else if (difference.inDays > 180) {
+      return Colors.orange;
+    } else if (difference.inDays > 90) {
+      return Colors.yellow;
+    } else {
+      return Colors.green;
+    }
   }
 }
