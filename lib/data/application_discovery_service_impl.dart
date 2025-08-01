@@ -1,12 +1,39 @@
 import 'dart:typed_data';
+import 'package:myapp/data/app_repository.dart';
 import 'package:myapp/domain/application_discovery_service.dart';
 import 'package:myapp/models/app_entity.dart';
 
 class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
+  final AppRepository _appRepository = AppRepository();
+
   @override
   Future<List<AppEntity>> discoverApplications() async {
+    List<AppEntity> apps = await _appRepository.getAllApps();
+    if (apps.isNotEmpty) {
+      return apps;
+    }
+
     // For now, return a hardcoded list of applications for UI development.
     // The actual implementation will use method channels to call native code.
+    apps = await _getMockApps();
+    for (var app in apps) {
+      await _appRepository.insert(app);
+    }
+    return apps;
+  }
+
+  @override
+  Future<void> scanDirectory(String path) async {
+    // In the future, this will trigger a scan in a specific directory.
+    // For now, it does nothing.
+    return Future.value();
+  }
+
+  Future<void> clear() async {
+    await _appRepository.clearAll();
+  }
+
+  Future<List<AppEntity>> _getMockApps() {
     return Future.delayed(const Duration(seconds: 2), () {
       return [
         AppEntity(
@@ -47,12 +74,5 @@ class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
         ),
       ];
     });
-  }
-
-  @override
-  Future<void> scanDirectory(String path) async {
-    // In the future, this will trigger a scan in a specific directory.
-    // For now, it does nothing.
-    return Future.value();
   }
 }

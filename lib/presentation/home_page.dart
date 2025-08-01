@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/data/application_discovery_service_impl.dart';
 import 'package:myapp/models/app_entity.dart';
 import 'package:myapp/presentation/app_list_view.dart';
 import 'package:myapp/presentation/providers.dart';
@@ -23,6 +24,21 @@ class HomePage extends ConsumerWidget {
           style: GoogleFonts.sora(fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever_outlined),
+            tooltip: 'Clear Cache & Rescan',
+            onPressed: () async {
+              ref.read(isLoadingProvider.notifier).state = true;
+              await (ref.read(applicationDiscoveryServiceProvider)
+                      as ApplicationDiscoveryServiceImpl)
+                  .clear();
+              final apps = await ref
+                  .read(applicationDiscoveryServiceProvider)
+                  .discoverApplications();
+              ref.read(appListProvider.notifier).state = apps;
+              ref.read(isLoadingProvider.notifier).state = false;
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () async {
