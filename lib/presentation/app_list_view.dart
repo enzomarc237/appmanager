@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:myapp/models/app_entity.dart';
+import 'package:myapp/presentation/providers.dart';
 
-class AppListView extends StatelessWidget {
+class AppListView extends ConsumerWidget {
   final List<AppEntity> apps;
 
   const AppListView({super.key, required this.apps});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
       itemCount: apps.length,
       itemBuilder: (context, index) {
@@ -22,7 +24,34 @@ class AppListView extends StatelessWidget {
           trailing: IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () {
-              // TODO: Implement uninstallation
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Uninstall Application'),
+                    content: Text(
+                        'Are you sure you want to uninstall ${app.name}?'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Uninstall'),
+                        onPressed: () async {
+                          await ref
+                              .read(applicationDiscoveryServiceProvider)
+                              .delete(app.id);
+                          ref.refresh(appListProvider);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
             },
           ),
         );

@@ -27,6 +27,12 @@ class ApplicationDiscoveryServiceImpl implements ApplicationDiscoveryService {
     await platform.invokeMethod('scanDirectory', {'path': path});
   }
 
+  @override
+  Future<void> delete(String id) async {
+    await _appRepository.delete(id);
+    await platform.invokeMethod('delete', {'id': id});
+  }
+
   Future<void> clear() async {
     await _appRepository.clearAll();
   }

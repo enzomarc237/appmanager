@@ -26,6 +26,21 @@ class AppDiscovery {
         }
         return applications
     }
+    
+    func moveAppToTrash(bundleId: String, completion: @escaping (Bool) -> Void) {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) else {
+            completion(false)
+            return
+        }
+        
+        NSWorkspace.shared.recycle([url]) { (newURLs, error) in
+            if error != nil {
+                completion(false)
+            } else {
+                completion(true)
+            }
+        }
+    }
 
     private func getApplicationData(for url: URL) -> [String: Any]? {
         let fileManager = FileManager.default

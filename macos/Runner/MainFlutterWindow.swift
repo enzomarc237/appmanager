@@ -20,6 +20,15 @@ class MainFlutterWindow: NSWindow {
       case "scanDirectory":
         // Not implemented yet
         result(FlutterMethodNotImplemented)
+      case "delete":
+        if let args = call.arguments as? [String: Any],
+           let id = args["id"] as? String {
+            appDiscovery.moveAppToTrash(bundleId: id) { success in
+                result(success)
+            }
+        } else {
+            result(false)
+        }
       default:
         result(FlutterMethodNotImplemented)
       }
