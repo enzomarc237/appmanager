@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/app_entity.dart';
+import 'package:myapp/presentation/widgets/detail_row.dart';
 
 class AppDetailView extends StatelessWidget {
   final AppEntity app;
@@ -38,29 +39,14 @@ class AppDetailView extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            _buildDetailRow('Path', app.path),
-            _buildDetailRow('Size', '${(app.size / 1024 / 1024).toStringAsFixed(2)} MB'),
-            _buildDetailRow('Created', app.createdAt.toLocal().toString()),
-            _buildDetailRow('Modified', app.modifiedAt.toLocal().toString()),
-            _buildDetailRow('Last Launched', app.lastLaunchedAt.toLocal().toString()),
-            _buildDetailRow('System App', app.isSystemApp ? 'Yes' : 'No'),
+            DetailRow(title: 'Path', value: app.path),
+            DetailRow(title: 'Size', value: '${(app.size / 1024 / 1024).toStringAsFixed(2)} MB'),
+            DetailRow(title: 'Created', value: app.createdAt.toLocal().toString()),
+            DetailRow(title: 'Modified', value: app.modifiedAt.toLocal().toString()),
+            DetailRow(title: 'Last Launched', value: app.lastLaunchedAt.toLocal().toString()),
+            DetailRow(title: 'System App', value: app.isSystemApp ? 'Yes' : 'No'),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Flexible(
-            child: Text(value, textAlign: TextAlign.end),
-          ),
-        ],
       ),
     );
   }
