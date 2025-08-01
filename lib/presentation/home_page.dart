@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/data/application_discovery_service_impl.dart';
+import 'package:myapp/domain/sort_criteria.dart';
 import 'package:myapp/models/app_entity.dart';
 import 'package:myapp/presentation/app_list_view.dart';
 import 'package:myapp/presentation/providers.dart';
 
 final appListProvider = StateProvider<List<AppEntity>>((ref) => []);
 final isLoadingProvider = StateProvider<bool>((ref) => false);
+final sortCriteriaProvider = StateProvider<SortCriteria>(
+    (ref) => SortCriteria(field: SortField.name, direction: SortDirection.ascending));
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -16,6 +19,9 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appList = ref.watch(appListProvider);
     final isLoading = ref.watch(isLoadingProvider);
+    final sortCriteria = ref.watch(sortCriteriaProvider);
+
+    final sortedAppList = _sortApps(appList, sortCriteria);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,6 +30,7 @@ class HomePage extends ConsumerWidget {
           style: GoogleFonts.sora(fontWeight: FontWeight.bold),
         ),
         actions: [
+          _buildSortMenu(ref),
           IconButton(
             icon: const Icon(Icons.delete_forever_outlined),
             tooltip: 'Clear Cache & Rescan',
@@ -54,10 +61,76 @@ class HomePage extends ConsumerWidget {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : appList.isEmpty
+          : sortedAppList.isEmpty
               ? buildEmptyState(context, ref)
-              : AppListView(apps: appList),
+              : AppListView(apps: sortedAppList),
     );
+  }
+
+  Widget _buildSortMenu(WidgetRef ref) {
+    final sortCriteria = ref.watch(sortCriteriaProvider);
+    return PopupMenuButton<SortField>(
+      onSelected: (SortField field) {
+        final currentDirection = sortCriteria.direction;
+        final newDirection = sortCriteria.field == field
+            ? (currentDirection == SortDirection.ascending
+                ? SortDirection.descending
+                : SortDirection.ascending)
+            : SortDirection.ascending;
+        ref.read(sortCriteriaProvider.notifier).state =
+            SortCriteria(field: field, direction: newDirection);
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<SortField>>[
+        const PopupMenuItem<SortField>(
+          value: SortField.name,
+          child: Text('Sort by Name'),
+        ),
+        const PopupMenuItem<SortField>(
+          value: SortField.size,
+          child: Text('Sort by Size'),
+        ),
+        const PopupMenuItem<SortField>(
+          value: SortField.createdAt,
+          child: Text('Sort by Creation Date'),
+        ),
+        const PopupMenuItem<SortField>(
+          value: SortField.modifiedAt,
+          child: Text('Sort by Modification Date'),
+        ),
+        const PopupMenuItem<SortField>(
+          value: SortField.lastLaunchedAt,
+          child: Text('Sort by Last Launched'),
+        ),
+      ],
+      icon: const Icon(Icons.sort),
+    );
+  }
+
+  List<AppEntity> _sortApps(List<AppEntity> apps, SortCriteria criteria) {
+    apps.sort((a, b) {
+      int comparison;
+      switch (criteria.field) {
+        case SortField.name:
+          comparison = a.name.compareTo(b.name);
+          break;
+        case SortField.size:
+          comparison = a.size.compareTo(b.size);
+          break;
+        case SortField.createdAt:
+          comparison = a.createdAt.compareTo(b.createdAt);
+          break;
+        case SortField.modifiedAt:
+          comparison = a.modifiedAt.compareTo(b.modifiedAt);
+          break;
+        case SortField.lastLaunchedAt:
+          comparison = a.lastLaunchedAt.compareTo(b.lastLaunchedAt);
+          break;
+      }
+      return criteria.direction == SortDirection.ascending
+          ? comparison
+          : -comparison;
+    });
+    return apps;
   }
 
   Widget buildEmptyState(BuildContext context, WidgetRef ref) {
