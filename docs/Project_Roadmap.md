@@ -96,6 +96,10 @@
 **Deliverables:**
 - Version 1.2 release with advanced management features
 
+### Sprint 9: Android Platform Support (4 weeks)
+- Implement application discovery for Android
+- Develop uninstallation functionality for Android applications
+
 ## Version 2.0 (Major Update) - Future Development
 
 ### Phase 1: Usage Analytics (4 weeks)
