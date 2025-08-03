@@ -4,4 +4,5 @@ abstract class ApplicationDiscoveryService {
   Future<List<AppEntity>> discoverApplications();
   Future<void> scanDirectory(String path);
   Future<void> delete(String id);
+  Future<void> deleteAndroidApp(String packageName);
 }

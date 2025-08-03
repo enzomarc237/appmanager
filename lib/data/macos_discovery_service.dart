@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:myapp/data/app_repository.dart';
 import 'package:myapp/domain/application_discovery_service.dart';
@@ -31,6 +30,11 @@ class MacOSDiscoveryService implements ApplicationDiscoveryService {
   Future<void> delete(String id) async {
     await _appRepository.delete(id);
     await platform.invokeMethod('delete', {'id': id});
+  }
+
+ @override
+  Future<void> deleteAndroidApp(String bundleId) async {
+    // Placeholder for Android deletion on macOS (should not be called)
   }
 
   Future<void> clear() async {

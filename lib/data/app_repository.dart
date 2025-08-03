@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:myapp/data/database_service.dart';
+import 'package:myapp/data/android_discovery_service.dart';
 import 'package:myapp/models/app_entity.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AppRepository {
+  final androidDiscoveryService = AndroidDiscoveryService();
   final dbService = DatabaseService.instance;
 
   Future<int> insert(AppEntity app) async {
@@ -11,12 +15,23 @@ class AppRepository {
   }
 
   Future<List<AppEntity>> getAllApps() async {
+    if (Platform.isAndroid) {
+      // For Android, retrieve apps directly from the discovery service
+      return await androidDiscoveryService.discoverApplications();
+    }
+
+    // For other platforms, retrieve from the database as before
     Database db = await dbService.database;
     final List<Map<String, dynamic>> maps = await db.query(DatabaseService.table);
 
     return List.generate(maps.length, (i) {
       return _mapToApp(maps[i]);
     });
+  }
+
+  Future<void> deleteApp(String bundleId) async {
+    // For Android, use the discovery service to delete the app
+    await androidDiscoveryService.deleteApplication(bundleId);
   }
 
   Future<int> update(AppEntity app) async {

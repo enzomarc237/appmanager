@@ -46,7 +46,9 @@ class AppListItem extends ConsumerWidget {
                       await ref
                           .read(applicationDiscoveryServiceProvider)
                           .delete(app.id);
-                      ref.refresh(appListProvider);
+                      // Await the refresh to ensure the list is updated before navigating.
+                      var refresh = await ref.refresh(appListProvider);
+                      // It's safe to use BuildContext after an awaited async operation if the widget is still mounted.
                       Navigator.of(context).pop();
                     },
                   ),

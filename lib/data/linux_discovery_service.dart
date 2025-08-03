@@ -34,6 +34,12 @@ class LinuxDiscoveryService implements ApplicationDiscoveryService {
     await _appRepository.delete(id);
   }
 
+  @override
+  Future<void> deleteAndroidApp(String bundleId) {
+    // TODO: Implement Android specific deletion logic for Linux if necessary.
+    throw UnimplementedError();
+  }
+
   Future<void> clear() async {
     await _appRepository.clearAll();
   }
